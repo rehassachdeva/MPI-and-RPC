@@ -4,47 +4,65 @@
 using namespace std;
 
 int main(int argc, char **argv) {
-	int n,m;
-	cin>>n>>m;
+	int n;
+	cin >> n;
 
-	double mat[n][2*m];
+	double mat[n][2*n];
 
-	memset(mat,0,sizeof(mat));
+	memset(mat, 0, sizeof(mat));
 
-	for(int i=0;i<n;i++)
-		for(int j=0;j<m;j++)
-			cin>>mat[i][j];
+	for(int i = 0; i < n; i++)
+		for(int j = 0; j < n; j++)
+			cin >> mat[i][j];
 
-	for(int i=0;i<n;i++)
-		mat[i][m+i]=1;
+	// Append identity matrix to the right
+	for(int i = 0; i < n; i++)
+		mat[i][n + i] = 1;
 
-	for(int i=0;i<n;i++) {
-		double tmp=mat[i][i];
-		// if(tmp==0) continue;
-		for(int j=0;j<2*m;j++)
-			mat[i][j]/=tmp;
+	//Pivoting
+	for(int k = 0; k < n; k++) {
+		
+		// Find the kth pivot.
+		int i_max = k, mx = abs(mat[k][k]);
+		for(int i = k + 1; i < n; i++) {
+			if(abs(mat[i][k]) > mx) {
+				i_max = i;
+				mx = abs(mat[i][k]);
+			}
+		}
 
-		for(int k=i+1;k<n;k++) {
-			double tmp=mat[k][i];;
-			for(int j=0;j<2*m;j++) {
-				mat[k][j]-=mat[i][j]*tmp;
+		// Swap current row with the pivot
+		for(int j = 0; j < 2*n; j++) {
+			double tmp = mat[k][j];
+			mat[k][j] = mat[i_max][j];
+			mat[i_max][j] = tmp;
+		}
+	}
+
+	// Reduction to diagonal matrix
+	for(int i = 0; i < n; i++) {
+		for(int j = 0; j < n; j++) {
+			if(j != i) {
+				double tmp = mat[j][i] / mat[i][i];
+				for(int k = 0; k < 2*n; k++) {
+					mat[j][k] -= mat[i][k] * tmp;
+				}
 			}
 		}
 	}
 
-	for(int i=n-1;i>=0;i--) {
-		for(int k=i-1;k>=0;k--) {
-			double tmp=mat[k][i];
-			for(int j=0;j<2*m;j++) {
-				mat[k][j]-=mat[i][j]*tmp;
-			}
-		}
+	// Reduction to identity matrix
+	for(int i = 0; i < n; i++) {
+		double tmp = mat[i][i];
+		for(int j = 0; j < 2*n; j++)
+			mat[i][j] /= tmp;
 	}
 
-	for(int i=0;i<n;i++) {
-		for(int j=m;j<2*m;j++)
-			cout<<mat[i][j]<<" ";
-		cout<<endl;
+	// Output
+	for(int i = 0; i < n; i++) {
+		for(int j = n; j < 2*n; j++)
+			cout << mat[i][j]<<" ";
+		cout << endl;
 	}
 
 	return 0;
