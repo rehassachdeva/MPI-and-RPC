@@ -47,47 +47,62 @@ int main(int argc, char **argv) {
 		}
 
 		// Reduction to diagonal matrix
-		int ni = (2*n) / (size - 1);
-		int spare = (2*n) % (size - 1);
-		vector<int> nis;
-
-		int prev = 0;
-		for(int i = 1; i < size; i++) {
-			int cur = ni;
-			if(spare > 0) {
-				cur++;
-				spare--;
-			}
-			nis.push_back(cur);
-			MPI_Send(&n, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-			MPI_Send(&cur, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-			prev += cur;
+		if(size == 1) {
+			for(int i = 0; i < n; i++) {
+				for(int j = 0; j < n; j++) {
+					if(j != i) {
+						double tmp = mat[j][i] / mat[i][i];
+						for(int k = 0; k < 2*n; k++) {
+							mat[j][k] -= mat[i][k] * tmp;
+						}
+					}
+				}
+			}			
 		}
 
-		for(int i = 0; i < n; i++) {
-			for(int j = 0; j < n; j++) {
-				if(j != i) {
+		else {
+			int ni = (2*n) / (size - 1);
+			int spare = (2*n) % (size - 1);
+			vector<int> nis;
 
-					double tmp = mat[j][i] / mat[i][i];
-					for(int k = 1; k < size; k++)
-						MPI_Send(&tmp, 1, MPI_DOUBLE, k, 0, MPI_COMM_WORLD);
-					
-					int ptr = 0;
-					for(int k = 1; k < size; k++) {
-						MPI_Send(&mat[i][ptr], nis[k - 1], MPI_DOUBLE, k, 0, MPI_COMM_WORLD);
-						ptr += nis[k];
-					}
+			int prev = 0;
+			for(int i = 1; i < size; i++) {
+				int cur = ni;
+				if(spare > 0) {
+					cur++;
+					spare--;
+				}
+				nis.push_back(cur);
+				MPI_Send(&n, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+				MPI_Send(&cur, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+				prev += cur;
+			}
 
-					ptr = 0;
-					for(int k = 1; k < size; k++) {
-						MPI_Send(&mat[j][ptr], nis[k - 1], MPI_DOUBLE, k, 0, MPI_COMM_WORLD);
-						ptr += nis[k];
-					}
+			for(int i = 0; i < n; i++) {
+				for(int j = 0; j < n; j++) {
+					if(j != i) {
 
-					ptr = 0;
-					for(int k = 1; k < size; k++) {
-						MPI_Recv(&mat[j][ptr], nis[k - 1], MPI_DOUBLE, k, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-						ptr += nis[k];
+						double tmp = mat[j][i] / mat[i][i];
+						for(int k = 1; k < size; k++)
+							MPI_Send(&tmp, 1, MPI_DOUBLE, k, 0, MPI_COMM_WORLD);
+						
+						int ptr = 0;
+						for(int k = 1; k < size; k++) {
+							MPI_Send(&mat[i][ptr], nis[k - 1], MPI_DOUBLE, k, 0, MPI_COMM_WORLD);
+							ptr += nis[k];
+						}
+
+						ptr = 0;
+						for(int k = 1; k < size; k++) {
+							MPI_Send(&mat[j][ptr], nis[k - 1], MPI_DOUBLE, k, 0, MPI_COMM_WORLD);
+							ptr += nis[k];
+						}
+
+						ptr = 0;
+						for(int k = 1; k < size; k++) {
+							MPI_Recv(&mat[j][ptr], nis[k - 1], MPI_DOUBLE, k, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+							ptr += nis[k];
+						}
 					}
 				}
 			}
