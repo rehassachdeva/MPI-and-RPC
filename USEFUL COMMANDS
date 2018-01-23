@@ -1,4 +1,0 @@
-Running MPI
-
-mpic++ kth_smallest.cpp -o kthsmallest
-mpirun -np 3 kthsmallest 

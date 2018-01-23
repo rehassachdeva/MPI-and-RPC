@@ -16,9 +16,10 @@ int main(int argc, char *argv[])
         cmd += " ";
     }
 
+    cmd += " 2>&1";
 
     if (argc < 2) {
-        fprintf(stderr, "usage: ./client rfinger <args> \n");
+        fprintf(stderr, "usage: ./client finger <args> \n");
         exit(1);
     }
     gethostname(host, 256);

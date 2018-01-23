@@ -1,0 +1,10 @@
+Running MPI
+mpic++ kth_smallest.cpp -o kthsmallest
+mpirun -np 3 kthsmallest 
+
+mpic++ matrix_inversion.cpp -o matrix_inversion
+mpirun -np 5 matrix_inversion
+
+Running RPC
+./server
+./client finger <args>
